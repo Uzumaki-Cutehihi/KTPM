@@ -1,17 +1,25 @@
 # 🚀 BookVault Microservices - Quick Start
 
-## Prerequisites
+## ⚡ Cách Chạy Nhanh (3 Phương Pháp)
 
-- Docker & Docker Compose
-- JDK 21 (nếu build local)
-- Maven 3.9+ (nếu build local)
+### 🎯 Cách 1: Dùng Script (NHANH NHẤT)
 
-## Quick Start
+**Windows:**
+```bash
+build-and-start.bat
+```
 
-### 1. Chạy với Docker Compose
+**Linux/Mac:**
+```bash
+chmod +x build-and-start.sh
+./build-and-start.sh
+```
+
+### 🎯 Cách 2: Docker Compose (Đầy đủ services)
 
 ```bash
-# Start tất cả services
+# Build và start tất cả services
+docker compose build
 docker compose up -d
 
 # Xem logs
@@ -21,16 +29,34 @@ docker compose logs -f
 docker compose down
 ```
 
-### 2. Kiểm tra Services
+### 🎯 Cách 3: Chỉ Core Services (NHANH - bỏ Elasticsearch, MinIO, Kafka)
 
 ```bash
+# Chạy chỉ core services (catalog, iam, borrowing, gateway, admin)
+docker compose -f docker-compose.minimal.yml build
+docker compose -f docker-compose.minimal.yml up -d
+```
+
+## 📋 Prerequisites
+
+- Docker & Docker Compose
+- JDK 21 (nếu build local)
+- Maven 3.9+ (nếu build local)
+
+## ✅ Kiểm Tra Services Đã Chạy
+
+```bash
+# Xem status
+docker compose ps
+
 # Health checks
 curl http://localhost:8080/actuator/health  # Gateway
 curl http://localhost:8081/actuator/health  # Catalog
 curl http://localhost:8082/actuator/health  # IAM
+curl http://localhost:8083/actuator/health  # Borrowing
 ```
 
-### 3. Test API
+## 🧪 Test API
 
 **Register user**:
 ```bash

@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: search-service
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URI:http://elasticsearch:9200}
 
 management:
   endpoints:

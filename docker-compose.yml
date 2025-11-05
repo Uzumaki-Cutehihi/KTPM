@@ -1,7 +1,6 @@
-version: "3.9"
 services:
   catalog-postgres:
-    image: postgres:16
+    image: postgres:14
     environment:
       POSTGRES_DB: catalog
       POSTGRES_USER: catalog
@@ -15,7 +14,7 @@ services:
       retries: 10
 
   iam-postgres:
-    image: postgres:16
+    image: postgres:14
     environment:
       POSTGRES_DB: iam
       POSTGRES_USER: iam
@@ -28,9 +27,25 @@ services:
       timeout: 5s
       retries: 10
 
+  borrowing-postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: borrowing
+      POSTGRES_USER: borrowing
+      POSTGRES_PASSWORD: borrowing
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U borrowing -d borrowing"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   catalog:
     build:
       context: ./services/catalog
+    image: bookvault-catalog:latest
+    pull_policy: never
     environment:
       DB_HOST: catalog-postgres
       DB_PORT: 5432
@@ -46,6 +61,8 @@ services:
   iam:
     build:
       context: ./services/iam
+    image: bookvault-iam:latest
+    pull_policy: never
     environment:
       DB_HOST: iam-postgres
       DB_PORT: 5432
@@ -58,19 +75,49 @@ services:
     ports:
       - "8082:8082"
 
+  borrowing:
+    build:
+      context: ./services/borrowing
+    image: bookvault-borrowing:latest
+    pull_policy: never
+    environment:
+      DB_HOST: borrowing-postgres
+      DB_PORT: 5432
+      DB_NAME: borrowing
+      DB_USER: borrowing
+      DB_PASSWORD: borrowing
+    depends_on:
+      borrowing-postgres:
+        condition: service_healthy
+      catalog:
+        condition: service_started
+    ports:
+      - "8083:8083"
+
   gateway:
     build:
       context: ./services/gateway
+    image: bookvault-gateway:latest
+    pull_policy: never
     environment:
-      JWT_PUBLIC_KEY_PEM: |
-        -----BEGIN PUBLIC KEY-----
-        ${JWT_PUBLIC_KEY_PEM_CONTENT:-}
-        -----END PUBLIC KEY-----
+      JWT_PUBLIC_KEY_PEM: ""
     depends_on:
       - catalog
       - iam
+      - borrowing
     ports:
       - "8080:8080"
+
+  admin:
+    build:
+      context: ./services/admin
+    image: bookvault-admin:latest
+    pull_policy: never
+    depends_on:
+      - catalog
+      - borrowing
+    ports:
+      - "8087:8087"
 
   zookeeper:
     image: bitnami/zookeeper:3.9
@@ -92,66 +139,65 @@ services:
     ports:
       - "29092:29092"
 
-networks:
-  default:
-    name: bookvault
-
-
-
-  borrowing-postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: borrowing
-      POSTGRES_USER: borrowing
-      POSTGRES_PASSWORD: borrowing
-    ports:
-      - "5435:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U borrowing -d borrowing"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  borrowing:
-    build:
-      context: ./services/borrowing
-    environment:
-      DB_HOST: borrowing-postgres
-      DB_PORT: 5432
-      DB_NAME: borrowing
-      DB_USER: borrowing
-      DB_PASSWORD: borrowing
-    depends_on:
-      borrowing-postgres:
-        condition: service_healthy
-    ports:
-      - "8083:8083"
-
   search:
     build:
       context: ./services/search
+    image: bookvault-search:latest
+    pull_policy: never
+    environment:
+      ELASTICSEARCH_URI: ${ELASTICSEARCH_URI:-http://elasticsearch:9200}
+    depends_on:
+      elasticsearch:
+        condition: service_started
+        required: false
     ports:
       - "8084:8084"
 
   notification:
     build:
       context: ./services/notification
+    image: bookvault-notification:latest
+    pull_policy: never
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    depends_on:
+      kafka:
+        condition: service_started
+        required: false
     ports:
       - "8085:8085"
 
   media:
     build:
       context: ./services/media
+    image: bookvault-media:latest
+    pull_policy: never
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: bookvault-media
+    depends_on:
+      minio:
+        condition: service_started
+        required: false
     ports:
       - "8086:8086"
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
 
   minio:
     image: minio/minio:latest
@@ -159,6 +205,16 @@ networks:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
     command: server /data --console-address :9001
+    volumes:
+      - minio_data:/data
     ports:
       - "9000:9000"
       - "9001:9001"
+
+volumes:
+  minio_data:
+  es_data:
+
+networks:
+  default:
+    name: bookvault

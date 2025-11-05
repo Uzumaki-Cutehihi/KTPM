@@ -1,7 +1,17 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
-COPY . /workspace
-RUN mvn -q -e -DskipTests package
+
+# Copy pom.xml first to cache dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -B || true
+
+# Copy source code
+COPY src ./src
+
+# Build with retry
+RUN mvn clean package -DskipTests -B || \
+    (sleep 5 && mvn clean package -DskipTests -B) || \
+    (sleep 10 && mvn clean package -DskipTests -B)
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
