@@ -39,4 +39,5 @@ build/
 
 ### VS Code ###
 .vscode/
-.env
+.envsrc/main/resources/scar.json
+src/main/resources/scar.json
