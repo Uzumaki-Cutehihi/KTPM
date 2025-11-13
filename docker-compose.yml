@@ -52,9 +52,12 @@ services:
       DB_NAME: catalog
       DB_USER: catalog
       DB_PASSWORD: catalog
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       catalog-postgres:
         condition: service_healthy
+      kafka:
+        condition: service_started
     ports:
       - "8081:8081"
 
@@ -86,10 +89,14 @@ services:
       DB_NAME: borrowing
       DB_USER: borrowing
       DB_PASSWORD: borrowing
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CATALOG_SERVICE_URL: http://catalog:8081
     depends_on:
       borrowing-postgres:
         condition: service_healthy
       catalog:
+        condition: service_started
+      kafka:
         condition: service_started
     ports:
       - "8083:8083"
@@ -140,6 +147,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
   search:
     build:
@@ -148,10 +156,12 @@ services:
     pull_policy: never
     environment:
       ELASTICSEARCH_URI: ${ELASTICSEARCH_URI:-http://elasticsearch:9200}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       elasticsearch:
         condition: service_started
-        required: false
+      kafka:
+        condition: service_started
     ports:
       - "8084:8084"
 
@@ -169,7 +179,6 @@ services:
     depends_on:
       kafka:
         condition: service_started
-        required: false
     ports:
       - "8085:8085"
 
@@ -186,7 +195,6 @@ services:
     depends_on:
       minio:
         condition: service_started
-        required: false
     ports:
       - "8086:8086"
 

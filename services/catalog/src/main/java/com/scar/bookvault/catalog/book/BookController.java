@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/catalog/v1/books")
@@ -31,6 +32,14 @@ public class BookController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) { bookService.delete(id); }
+
+    // Endpoint cho Borrowing Service để cập nhật quantity
+    @PutMapping("/{id}/quantity")
+    public Book updateQuantity(@PathVariable Long id, @RequestBody Map<String, Integer> request) {
+        Integer quantityChange = request.get("quantityChange");
+        if (quantityChange == null) {
+            throw new IllegalArgumentException("quantityChange is required");
+        }
+        return bookService.updateQuantity(id, quantityChange);
+    }
 }
-
-
