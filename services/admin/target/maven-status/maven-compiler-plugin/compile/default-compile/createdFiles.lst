@@ -1,0 +1,4 @@
+com/scar/bookvault/admin/config/RestTemplateConfig.class
+com/scar/bookvault/admin/api/AdminController.class
+com/scar/bookvault/admin/AdminServiceApplication.class
+com/scar/bookvault/admin/service/AdminService.class
