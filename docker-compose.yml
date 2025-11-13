@@ -28,11 +28,7 @@ services:
       retries: 10
 
   borrowing-postgres:
-<<<<<<< HEAD
-    image: postgres:16
-=======
     image: postgres:14
->>>>>>> 224a3e946a1ceac095054dc81bdf5ca9bd3e9787
     environment:
       POSTGRES_DB: borrowing
       POSTGRES_USER: borrowing
@@ -82,11 +78,8 @@ services:
   borrowing:
     build:
       context: ./services/borrowing
-<<<<<<< HEAD
-=======
     image: bookvault-borrowing:latest
     pull_policy: never
->>>>>>> 224a3e946a1ceac095054dc81bdf5ca9bd3e9787
     environment:
       DB_HOST: borrowing-postgres
       DB_PORT: 5432
@@ -96,11 +89,6 @@ services:
     depends_on:
       borrowing-postgres:
         condition: service_healthy
-<<<<<<< HEAD
-    ports:
-      - "8083:8083"
-
-=======
       catalog:
         condition: service_started
     ports:
@@ -132,26 +120,27 @@ services:
       - "8087:8087"
 
   zookeeper:
-    image: bitnami/zookeeper:3.9
+    image: confluentinc/cp-zookeeper:7.6.1
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
 
   kafka:
-    image: bitnami/kafka:3.7
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    image: confluentinc/cp-kafka:7.6.1
     depends_on:
       - zookeeper
     ports:
       - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
->>>>>>> 224a3e946a1ceac095054dc81bdf5ca9bd3e9787
   search:
     build:
       context: ./services/search
@@ -201,42 +190,6 @@ services:
     ports:
       - "8086:8086"
 
-  gateway:
-    build:
-      context: ./services/gateway
-    environment:
-      JWT_PUBLIC_KEY_PEM: |
-        -----BEGIN PUBLIC KEY-----
-        ${JWT_PUBLIC_KEY_PEM_CONTENT:-}
-        -----END PUBLIC KEY-----
-    depends_on:
-      - catalog
-      - iam
-    ports:
-      - "8080:8080"
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.1
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-
-  kafka:
-    image: confluentinc/cp-kafka:7.6.1
-    depends_on:
-      - zookeeper
-    ports:
-      - "29092:29092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     environment:
@@ -260,13 +213,10 @@ services:
       - "9000:9000"
       - "9001:9001"
 
-<<<<<<< HEAD
-=======
 volumes:
   minio_data:
   es_data:
 
->>>>>>> 224a3e946a1ceac095054dc81bdf5ca9bd3e9787
 networks:
   default:
     name: bookvault
