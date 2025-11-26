@@ -20,30 +20,31 @@ export default function Books() {
     }
   }
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Danh sách sách</h2>
-      <button onClick={load} disabled={loading} style={{ padding: 8 }}>{loading ? '...' : 'Refresh'}</button>
-      {error && <div style={{ color: '#c62828' }}>{error}</div>}
+    <section className="max-w-6xl mx-auto px-4 py-10">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Danh sách sách</h2>
+        <button onClick={load} disabled={loading} className="px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-100">
+          {loading ? '...' : 'Refresh'}
+        </button>
+      </div>
+      {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
       {books.length === 0 ? (
-        <p>Không có sách</p>
+        <p className="mt-6 text-gray-600">Không có sách</p>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {books.map(b => (
-            <div key={b.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}>
-              <h4>{b.title}</h4>
-              <div>{b.author}</div>
-              <div>ISBN: {b.isbn}</div>
-              <Link to={`/books/${b.id}`}>Chi tiết</Link>
+            <div key={b.id} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition">
+              <h4 className="text-lg font-medium text-gray-900 group-hover:text-primary-600">{b.title}</h4>
+              <div className="text-sm text-gray-600">{b.author}</div>
+              <div className="mt-2 text-xs text-gray-500">ISBN: {b.isbn}</div>
+              <Link to={`/books/${b.id}`} className="mt-4 inline-block px-3 py-1.5 rounded-md bg-primary-600 text-white text-sm hover:bg-primary-700">Chi tiết</Link>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </section>
   )
 }
-

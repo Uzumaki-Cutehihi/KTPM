@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ catalog, iam, gateway ]
+        service: [ catalog, iam, gateway, borrowing, search, notification, media ]
     steps:
       - uses: actions/checkout@v4
       
@@ -36,7 +36,7 @@ jobs:
     if: github.event_name == 'push'
     strategy:
       matrix:
-        service: [ catalog, iam, gateway ]
+        service: [ catalog, iam, gateway, borrowing, search, notification, media ]
     steps:
       - uses: actions/checkout@v4
       
@@ -65,7 +65,7 @@ jobs:
     if: github.event_name == 'push'
     strategy:
       matrix:
-        service: [ catalog, iam, gateway ]
+        service: [ catalog, iam, gateway, borrowing, search, notification, media ]
     steps:
       - uses: actions/checkout@v4
       
@@ -114,4 +114,3 @@ jobs:
             --namespace bookvault --create-namespace
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
-

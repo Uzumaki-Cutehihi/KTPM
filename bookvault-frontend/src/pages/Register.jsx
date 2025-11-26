@@ -25,16 +25,15 @@ export default function Register() {
   }
 
   return (
-    <div style={{ padding: 20, maxWidth: 400 }}>
-      <h2>Đăng ký</h2>
-      {error && <div style={{ color: '#c62828' }}>{error}</div>}
-      <form onSubmit={onSubmit}>
-        <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" style={{ width: '100%', padding: 8, marginBottom: 10 }} />
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" style={{ width: '100%', padding: 8, marginBottom: 10 }} />
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" style={{ width: '100%', padding: 8, marginBottom: 10 }} />
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>{loading ? '...' : 'Register'}</button>
+    <section className="max-w-md mx-auto px-4 py-10">
+      <h2 className="text-2xl font-semibold">Đăng ký</h2>
+      {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
+      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        <input className="w-full px-3 py-2 rounded-md border border-gray-300" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" />
+        <input className="w-full px-3 py-2 rounded-md border border-gray-300" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+        <input className="w-full px-3 py-2 rounded-md border border-gray-300" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
+        <button type="submit" disabled={loading} className="w-full px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700">{loading ? '...' : 'Register'}</button>
       </form>
-    </div>
+    </section>
   )
 }
-
